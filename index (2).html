@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Solubility Curve Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,600;112,800&family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: a lab bench. Apparatus and procedure side by side, then the results table, then the graph-paper plot with a read-off tool, then theory, questions and teacher notes. */
+:root{
+  --bg:#edf1f3; --panel:#fbfcfc; --ink:#13202a; --muted:#55636f; --line:#cdd5dc;
+  --grid:#e2e8ed; --grid-major:#c3ced7; --accent:#0f5a6b; --accent-ink:#ffffff;
+  --heat:#c2410c; --cool:#1f6fa8; --ok:#2e7d4f; --bad:#b42318;
+  --s-nacl:#0072b2; --s-kcl:#d55e00; --s-kno3:#009e73;
+  --glass:#8aa3b4; --water:rgba(80,145,200,.16); --liquid:rgba(110,165,215,.32); --crystal:#ffffff; --crystal-edge:#7d8f9c;
+  --thermo:#d42a2a; --metal:#56636d; --stem:#ffffff;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f161b; --panel:#162027; --ink:#e3eaef; --muted:#9aa9b5; --line:#2a3842;
+    --grid:#1d2930; --grid-major:#2f3f4a; --accent:#5cc0d2; --accent-ink:#0b1418;
+    --heat:#fb8a3c; --cool:#6cb4ea; --ok:#5fc98a; --bad:#f58a80;
+    --s-nacl:#56b4e9; --s-kcl:#f0913f; --s-kno3:#3fc79d;
+    --glass:#6f8a9c; --water:rgba(90,150,200,.18); --liquid:rgba(120,175,225,.3); --crystal:#f4f7fa; --crystal-edge:#9fb0bd;
+    --thermo:#ff5f5f; --metal:#3d4a53; --stem:#dfe7ec; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f161b; --panel:#162027; --ink:#e3eaef; --muted:#9aa9b5; --line:#2a3842;
+  --grid:#1d2930; --grid-major:#2f3f4a; --accent:#5cc0d2; --accent-ink:#0b1418;
+  --heat:#fb8a3c; --cool:#6cb4ea; --ok:#5fc98a; --bad:#f58a80;
+  --s-nacl:#56b4e9; --s-kcl:#f0913f; --s-kno3:#3fc79d;
+  --glass:#6f8a9c; --water:rgba(90,150,200,.18); --liquid:rgba(120,175,225,.3); --crystal:#f4f7fa; --crystal-edge:#9fb0bd;
+  --thermo:#ff5f5f; --metal:#3d4a53; --stem:#dfe7ec; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.55 var(--body)}
+.wrap{max-width:1240px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:24px}
+header{display:grid;gap:10px}
+.eyebrow{font:500 12px/1.4 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+h1{font:800 clamp(34px,5.6vw,60px)/1 var(--display);font-stretch:112%;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.lede{margin:0;max-width:70ch;color:var(--muted);font-size:18px}
+.lede b{color:var(--ink)}
+h2{font:700 21px/1.2 var(--display);font-stretch:112%;margin:0;text-wrap:balance}
+h3{font:600 12px/1.2 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:14px;min-width:0;align-content:start}
+sub{font-size:.72em;line-height:0}
+
+.lab{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:24px;align-items:start}
+@media (max-width:900px){.lab{grid-template-columns:minmax(0,1fr)}}
+.app svg{display:block;width:100%;max-width:100%;max-height:470px;margin:0 auto}
+.meters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.meter{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);display:grid;gap:4px;min-width:0}
+.meter span{font:600 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.meter output{font:600 22px/1.1 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.meter small{font:500 13px var(--mono);color:var(--muted)}
+.obs{margin:0;font-size:16px;border-left:3px solid var(--accent);padding:6px 0 6px 12px}
+.obs b{font-weight:700}
+
+ol.steps{list-style:none;margin:0;padding:0;display:grid;gap:10px;counter-reset:s}
+ol.steps>li{counter-increment:s;display:grid;grid-template-columns:32px minmax(0,1fr);gap:4px 12px;padding:12px;border:1px solid transparent;border-radius:10px}
+ol.steps>li>*{grid-column:2}
+ol.steps>li::before{content:counter(s);grid-column:1;grid-row:1 / span 4;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font:800 16px/1 var(--display);background:var(--bg);border:1px solid var(--line)}
+ol.steps>li.now{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--panel))}
+ol.steps>li.now::before{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.st-t{font-weight:700;line-height:1.3;padding-top:5px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tip{margin:0;font-size:14px;color:var(--muted)}
+.btn{font:700 15px/1 var(--body);border-radius:8px;padding:11px 14px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.heat[aria-pressed="true"]{background:var(--heat);border-color:var(--heat);color:#fff}
+.btn.cool[aria-pressed="true"]{background:var(--cool);border-color:var(--cool);color:#fff}
+.btn.big{font-size:17px;padding:14px 18px;white-space:normal;text-align:left;line-height:1.25}
+.btn.small{font-size:13px;padding:7px 10px}
+.btn:disabled,.seg button:disabled{opacity:.45;cursor:not-allowed}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:transparent;color:var(--ink);font:600 15px/1 var(--body);padding:10px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.num{display:inline-flex;align-items:center;gap:6px;font-size:15px}
+.num input{width:6.2em;font:600 15px var(--mono);padding:9px 8px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink)}
+.next{margin:0;font-weight:700;display:flex;gap:8px;align-items:baseline}
+.next span{font:600 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.msg{margin:0;min-height:1.5em;font-size:15px;color:var(--muted)}
+.msg.warn{color:var(--bad)}
+.toggles{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;border-top:1px solid var(--line);padding-top:12px}
+.check{display:inline-flex;gap:8px;align-items:center;font-size:15px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.res-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.tablebox{position:relative;overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:15px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font:600 12px/1.3 var(--body);color:var(--muted);background:var(--bg)}
+td.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:0}
+.saltchip{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.mk{width:12px;height:12px;display:inline-block}
+.ex{font:600 10px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:3px 5px;color:var(--muted);margin-left:6px}
+.solcell{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.solcell input{width:6em;font:600 14px var(--mono);padding:7px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.verdict{font-size:13px}
+.verdict.ok{color:var(--ok);font-weight:700}
+.verdict.bad{color:var(--bad)}
+.linkbtn{border:0;background:none;color:var(--accent);font:600 13px var(--body);cursor:pointer;padding:4px;text-decoration:underline}
+.empty{padding:22px;text-align:center;color:var(--muted)}
+.del{border:0;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px 8px;border-radius:6px}
+.del:hover{color:var(--bad)}
+
+.plot{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:900px){.plot{grid-template-columns:minmax(0,1fr)}}
+.chartwrap{position:relative}
+#graph{display:block;width:100%;height:auto}
+#graph .gmin{stroke:var(--grid);stroke-width:1}
+#graph .gmaj{stroke:var(--grid-major);stroke-width:1}
+#graph .ax{fill:var(--muted);font:500 11px var(--mono)}
+#graph .axt{fill:var(--ink);font:600 12px var(--body)}
+#graph .axis{stroke:var(--ink);stroke-width:1.2}
+.chart-empty{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;color:var(--muted);font-size:15px;text-align:center;padding:40px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--muted);align-items:center}
+.legend .dash{width:22px;border-top:2px dashed var(--muted);display:inline-block;vertical-align:4px;margin-right:6px}
+.legend .solid{width:22px;border-top:2px solid var(--muted);display:inline-block;vertical-align:4px;margin-right:6px}
+.ctrls{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center}
+.readout{display:grid;gap:12px}
+.slide{display:grid;gap:6px}
+.slide label{font-size:15px;font-weight:600}
+.slide .row input[type=range]{flex:1 1 160px;accent-color:var(--accent)}
+.rtable{min-width:0;font-size:15px}
+.rtable td,.rtable th{padding:7px 8px}
+.flag{font-size:12px;color:var(--bad)}
+
+.theory{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:24px;align-items:start}
+@media (max-width:900px){.theory{grid-template-columns:minmax(0,1fr)}}
+.col{display:grid;gap:24px;min-width:0}
+.prose p{margin:0;max-width:66ch}
+.prose{display:grid;gap:10px}
+.eq{font:600 16px/1.5 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto}
+.dh{width:100%;min-width:0;font-size:15px}
+.dh td,.dh th{padding:7px 8px}
+details.q{border-top:1px solid var(--line);padding-top:12px}
+details.q:first-of-type{border-top:0;padding-top:0}
+details.q summary{cursor:pointer;list-style:none;display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;font-weight:600}
+details.q summary::-webkit-details-marker{display:none}
+.qn{font:600 13px/1.6 var(--mono);color:var(--muted)}
+.mk-tag{font:600 11px/1 var(--mono);color:var(--accent);letter-spacing:.04em;margin-left:6px;white-space:nowrap}
+.rev{grid-column:2;font:600 12px/1 var(--mono);color:var(--accent);margin-top:6px}
+details.q[open] .rev{display:none}
+.ans{margin:10px 0 0 42px;padding:10px 14px;border-left:3px solid var(--accent);background:var(--bg);border-radius:0 8px 8px 0;font-size:16px;display:grid;gap:6px}
+.ans p{margin:0}
+ul.plain{margin:0;padding-left:20px;display:grid;gap:6px}
+details.teacher>summary{cursor:pointer;font:700 21px/1.2 var(--display);font-stretch:112%}
+details.teacher[open]>summary{margin-bottom:14px}
+.teacher-grid{display:grid;gap:14px}
+.src{font-size:14px;color:var(--muted)}
+.src a{color:var(--accent)}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">BTEC International L3 Applied Science · Unit 16 Applications of Inorganic Chemistry · Learning aim B2</div>
+    <h1>Solubility Curve Lab</h1>
+    <p class="lede">Find how the solubility of <b>sodium chloride</b> and <b>potassium chloride</b> changes with temperature. Dissolve a known mass of salt in hot water, let it cool, and record the temperature at which <b>crystals first appear</b>. At that moment the solution is saturated. Add more water and repeat, then plot your solubility curve.</p>
+  </header>
+
+  <section class="lab" aria-label="Virtual practical">
+    <div class="card app">
+      <h2>Apparatus</h2>
+      <svg id="app" viewBox="0 0 360 440" role="img" aria-label="A burette above a boiling tube containing salt solution and a thermometer, standing in a water bath on a hotplate">
+        <defs>
+          <clipPath id="tubeClip"><path d="M161,98 L161,376 A19,19 0 0 0 199,376 L199,98 Z"/></clipPath>
+        </defs>
+        <rect id="glow" x="62" y="398" width="236" height="8" rx="3" style="fill:var(--heat)" opacity="0"/>
+        <rect x="58" y="404" width="244" height="24" rx="5" style="fill:var(--metal)"/>
+        <circle cx="276" cy="416" r="6" style="fill:var(--panel)"/>
+        <rect id="bath" x="82" y="268" width="196" height="132" style="fill:var(--water)"/>
+        <g id="ice"></g>
+        <path d="M80,236 L80,398 Q80,402 84,402 L276,402 Q280,402 280,398 L280,236" style="fill:none;stroke:var(--glass);stroke-width:2.5"/>
+        <path d="M76,236 L84,236 M276,236 L284,236" style="stroke:var(--glass);stroke-width:2.5"/>
+        <g clip-path="url(#tubeClip)">
+          <rect x="161" y="98" width="38" height="300" style="fill:var(--panel)" opacity=".35"/>
+          <rect id="liq" x="150" y="350" width="60" height="60" style="fill:var(--liquid)"/>
+          <line id="meniscus" x1="161" x2="199" y1="350" y2="350" style="stroke:var(--cool);stroke-width:1.2" opacity=".6"/>
+          <g id="crystals"></g>
+        </g>
+        <path d="M160,96 L160,376 A20,20 0 0 0 200,376 L200,96" style="fill:none;stroke:var(--glass);stroke-width:2.2"/>
+        <path d="M156,96 L164,96 M196,96 L204,96" style="stroke:var(--glass);stroke-width:2.2"/>
+        <g id="thermo">
+          <rect x="184" y="34" width="9" height="352" rx="4.5" style="fill:var(--stem);stroke:var(--glass);stroke-width:1"/>
+          <g id="ticks"></g>
+          <rect id="tcol" x="187" y="300" width="3" height="80" style="fill:var(--thermo)"/>
+          <circle cx="188.5" cy="386" r="7" style="fill:var(--thermo)"/>
+        </g>
+        <g id="burette">
+          <rect x="157" y="4" width="20" height="74" rx="2" style="fill:var(--panel);stroke:var(--glass);stroke-width:1.6"/>
+          <rect id="bliq" x="158.5" y="6" width="17" height="71" style="fill:var(--liquid)"/>
+          <g id="bticks"></g>
+          <path d="M159,78 L175,78 L169,94 L165,94 Z" style="fill:var(--panel);stroke:var(--glass);stroke-width:1.4"/>
+          <rect x="146" y="80" width="42" height="5" rx="2" style="fill:var(--metal)"/>
+          <circle id="drop" cx="167" cy="98" r="2.6" style="fill:var(--cool)" opacity="0"/>
+        </g>
+        <text x="30" y="20" style="fill:var(--muted);font:500 11px var(--mono)">burette</text>
+        <text x="214" y="150" style="fill:var(--muted);font:500 11px var(--mono)">boiling tube</text>
+        <text x="214" y="54" style="fill:var(--muted);font:500 11px var(--mono)">thermometer</text>
+        <text x="214" y="260" style="fill:var(--muted);font:500 11px var(--mono)" id="bathLbl">water bath</text>
+      </svg>
+      <div class="meters">
+        <div class="meter"><span>Balance</span><output id="mMass">0.00</output><small>g</small></div>
+        <div class="meter"><span>Burette</span><output id="mVol">0.00</output><small>cm³ added</small></div>
+        <div class="meter"><span>Thermometer</span><output id="mTemp">22.0</output><small>°C</small></div>
+      </div>
+      <p class="obs" id="obs" aria-live="polite"><b>Observation:</b> </p>
+    </div>
+
+    <div class="card proc">
+      <h2>Procedure</h2>
+      <ol class="steps">
+        <li id="st-weigh">
+          <div class="st-t">Weigh the salt into a clean boiling tube</div>
+          <div class="row">
+            <div class="seg" role="group" aria-label="Salt">
+              <button type="button" id="s-NaCl" aria-pressed="false">NaCl</button>
+              <button type="button" id="s-KCl" aria-pressed="true">KCl</button>
+              <button type="button" id="s-KNO3" aria-pressed="false">KNO<sub>3</sub> (extension)</button>
+            </div>
+          </div>
+          <div class="row">
+            <label class="num" for="massIn">Mass <input type="number" id="massIn" min="0.50" max="12" step="0.01" value="4.00"> g</label>
+            <button class="btn" type="button" id="weighBtn">Weigh into new tube</button>
+          </div>
+          <p class="tip" id="planTip"></p>
+        </li>
+        <li id="st-water">
+          <div class="st-t">Add water from the burette</div>
+          <div class="row">
+            <button class="btn" type="button" data-add="0.1">+0.10 cm³</button>
+            <button class="btn" type="button" data-add="0.5">+0.50 cm³</button>
+            <button class="btn" type="button" data-add="1">+1.00 cm³</button>
+            <label class="num" for="addIn">or <input type="number" id="addIn" min="0.05" max="20" step="0.05" value="2.00"></label>
+            <button class="btn" type="button" id="addBtn">Add</button>
+          </div>
+        </li>
+        <li id="st-heat">
+          <div class="st-t">Heat and stir until all the solid dissolves</div>
+          <div class="row"><button class="btn heat" type="button" id="heatBtn" aria-pressed="false">Heat in water bath</button></div>
+        </li>
+        <li id="st-cool">
+          <div class="st-t">Take the tube out, stir, and watch it cool</div>
+          <div class="row">
+            <button class="btn cool" type="button" id="airBtn" aria-pressed="false">Cool in air</button>
+            <button class="btn cool" type="button" id="iceBtn" aria-pressed="false">Cool in ice bath</button>
+            <div class="seg" role="group" aria-label="Simulation speed">
+              <button type="button" id="sp1" aria-pressed="true">×1</button>
+              <button type="button" id="sp2" aria-pressed="false">×2</button>
+              <button type="button" id="sp4" aria-pressed="false">×4</button>
+            </div>
+          </div>
+        </li>
+        <li id="st-record">
+          <div class="st-t">Record the temperature when the first crystals appear</div>
+          <div class="row"><button class="btn primary big" type="button" id="recordBtn">First crystals seen: record temperature</button></div>
+        </li>
+      </ol>
+      <p class="next" id="next"><span>Next</span><em id="nextTxt"></em></p>
+      <p class="msg" id="msg" aria-live="polite"></p>
+      <div class="toggles">
+        <label class="check" for="realistic"><input type="checkbox" id="realistic" checked> Realistic errors (supercooling, evaporation, weighing)</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Results">
+    <div class="res-head">
+      <h2>Results</h2>
+      <div class="row">
+        <label class="check" for="autoCalc"><input type="checkbox" id="autoCalc"> Calculate solubility for me</label>
+        <button class="btn small" type="button" id="exampleBtn">Load example results</button>
+        <button class="btn small" type="button" id="clearBtn">Clear all results</button>
+      </div>
+    </div>
+    <p class="tip">Solubility (g per 100 g water) = mass of salt ÷ mass of water × 100. Take the density of water as 1.00 g cm⁻³. Type your answer and press Enter or Check. Points appear on the graph when the calculation is correct.</p>
+    <div class="tablebox">
+      <table>
+        <thead><tr>
+          <th>Run</th><th>Salt</th><th>Mass of salt / g</th><th>Water added / cm³</th><th>Mass of water / g</th><th>Temperature crystals appear / °C</th><th>Solubility / g per 100 g water</th><th><span class="sr">Delete</span></th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="plot" aria-label="Solubility curve">
+    <div class="card">
+      <h2>Solubility curve</h2>
+      <div class="ctrls">
+        <div class="seg" role="group" aria-label="Line of best fit">
+          <button type="button" id="fitCurve" aria-pressed="true">Smooth curve</button>
+          <button type="button" id="fitLine" aria-pressed="false">Straight line</button>
+          <button type="button" id="fitNone" aria-pressed="false">No line</button>
+        </div>
+        <div class="seg" role="group" aria-label="Y axis">
+          <button type="button" id="yZero" aria-pressed="true">Axis from 0</button>
+          <button type="button" id="yZoom" aria-pressed="false">Zoom to data</button>
+        </div>
+        <label class="check" for="bookOn"><input type="checkbox" id="bookOn"> Show data-book values</label>
+      </div>
+      <div class="chartwrap">
+        <svg id="graph" viewBox="0 0 640 420" role="img" aria-label="Graph of solubility in grams per 100 grams of water against temperature in degrees Celsius"></svg>
+        <div class="chart-empty" id="chartEmpty">Record and calculate results to plot your solubility curve.</div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="card readout">
+      <h2>Read from your graph</h2>
+      <div class="slide">
+        <label for="readT">Temperature: <span id="readTv">25</span> °C</label>
+        <div class="row"><input type="range" id="readT" min="0" max="100" step="1" value="25"></div>
+      </div>
+      <label class="num" for="readW">Mass of water <input type="number" id="readW" min="1" max="1000" step="1" value="100"> g</label>
+      <div class="tablebox" style="border:0">
+        <table class="rtable">
+          <thead><tr><th>Salt</th><th>Your curve</th><th>Data book</th><th>Difference</th></tr></thead>
+          <tbody id="rbody"></tbody>
+        </table>
+      </div>
+      <p class="tip" id="massTip"></p>
+      <p class="tip">Values are grams of salt per 100 g water, then the mass that dissolves in the mass of water you set. Your curve is only reliable inside the range of temperatures you measured.</p>
+    </div>
+  </section>
+
+  <section class="theory">
+    <div class="col">
+      <div class="card prose">
+        <h2>Key ideas</h2>
+        <p><b>Solubility</b> is the maximum mass of a solute that dissolves in 100 g of water at a stated temperature. Its units here are g per 100 g water.</p>
+        <p>A <b>saturated solution</b> holds as much solute as it can at that temperature. Undissolved solid and dissolved ions are in dynamic equilibrium:</p>
+        <div class="eq">MX(s) ⇌ M⁺(aq) + X⁻(aq)</div>
+        <p>When a solution cools, its solubility falls. The first crystals appear at the temperature where the solution becomes saturated, so at that temperature:</p>
+        <div class="eq">solubility = (mass of salt ÷ mass of water) × 100</div>
+        <p>Each run gives one point on the curve. Adding more water lowers the concentration, so the next run crystallises at a lower temperature.</p>
+      </div>
+      <div class="card prose">
+        <h2>Why the curves have different slopes</h2>
+        <p>All three salts dissolve endothermically. By Le Chatelier's principle, raising the temperature moves the equilibrium to the right, so solubility rises. The more endothermic the dissolving, the steeper the curve.</p>
+        <div class="tablebox" style="border:0">
+          <table class="dh">
+            <thead><tr><th>Salt</th><th>Δ<sub>sol</sub>H / kJ mol⁻¹</th><th>Solubility at 20 °C</th><th>at 80 °C</th></tr></thead>
+            <tbody>
+              <tr><td>NaCl</td><td class="n">+3.88</td><td class="n">35.9</td><td class="n">37.9</td></tr>
+              <tr><td>KCl</td><td class="n">+17.22</td><td class="n">34.2</td><td class="n">51.3</td></tr>
+              <tr><td>KNO<sub>3</sub></td><td class="n">+34.89</td><td class="n">31.6</td><td class="n">169</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Δ<sub>sol</sub>H depends on the balance between breaking up the lattice (endothermic) and hydrating the ions (exothermic). K⁺ (ionic radius 138 pm) is larger than Na⁺ (102 pm). Its charge density is lower, so it is hydrated less exothermically, and dissolving KCl is more endothermic overall.</p>
+      </div>
+      <div class="card prose">
+        <h2>Model assumptions</h2>
+        <ul class="plain">
+          <li>Density of water is 1.00 g cm⁻³, so 1.00 cm³ of water has a mass of 1.00 g.</li>
+          <li>Salt dissolves or crystallises almost instantly once the solution is below or above saturation, because the tube is stirred all the time.</li>
+          <li>The water bath reaches at most 98 °C. Cooling in air approaches 22 °C and the ice bath approaches 1 °C.</li>
+          <li>With realistic errors on: the balance reading varies slightly from the target mass, crystals appear 0 to 1.5 °C below the true saturation temperature (supercooling), a little water evaporates above 85 °C, and the thermometer reads to 0.5 °C.</li>
+          <li>Solubility between data-book points is found by smooth interpolation.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <h2>Questions</h2>
+        <details class="q"><summary><span class="qn">Q1</span><span>Define the term <i>solubility</i>.</span><span class="rev">Show answer</span></summary>
+          <div class="ans"><p>The maximum mass of solute that dissolves in 100 g of solvent (water) at a stated temperature, forming a saturated solution. Units: g per 100 g water.</p></div></details>
+        <details class="q"><summary><span class="qn">Q2</span><span>What is a saturated solution? Use the idea of equilibrium.</span><span class="rev">Show answer</span></summary>
+          <div class="ans"><p>A solution that contains the maximum amount of dissolved solute at that temperature. If excess solid is present, the rate of dissolving equals the rate of crystallising: MX(s) ⇌ M⁺(aq) + X⁻(aq) is in dynamic equilibrium.</p></div></details>
+        <details class="q"><summary><span class="qn">Q3</span><span>Explain why the temperature at which crystals first appear lets you calculate the solubility.</span><span class="rev">Show answer</span></summary>
+          <div class="ans"><p>Above that temperature the solubility is greater than the concentration in the tube, so all the salt stays dissolved. As the solution cools, solubility falls until it equals the concentration in the tube. The solution is then exactly saturated, and any further cooling makes the excess crystallise. So at the crystallisation temperature, solubility = mass of salt ÷ mass of water × 100.</p></div></details>
+        <details class="q"><summary><span class="qn">Q4</span><span>4.00 g of KCl is dissolved in 9.00 cm³ of water. Crystals first appear at 55.5 °C. Calculate the solubility of KCl at 55.5 °C.</span><span class="rev">Show answer</span></summary>
+          <div class="ans"><p>Mass of water = 9.00 cm³ × 1.00 g cm⁻³ = 9.00 g</p><p>Solubility = 4.00 ÷ 9.00 × 100 = <b>44.4 g per 100 g water</b></p></div></details>
+        <details class="q"><summary><span class="qn">Q5</span><span>Using data-book values, a saturated solution of KCl in 50 g of water is cooled from 80 °C to 20 °C. Calculate the mass of crystals that forms.</span><span class="rev">Show answer</span></summary>
+          <div class="ans"><p>At 80 °C: 51.3 g per 100 g, so 51.3 × 50 ÷ 100 = 25.65 g dissolved.</p><p>At 20 °C: 34.2 g per 100 g, so 34.2 × 50 ÷ 100 = 17.10 g can stay dissolved.</p><p>Mass of crystals = 25.65 − 17.10 = <b>8.55 g (8.6 g)</b></p></div></details>
+        <details class="q"><summary><span class="qn">Q6</span><span>Compare your NaCl and KCl curves. Which salt's solubility depends more on temperature? Explain why.</span><span class="rev">Show answer</span></summary>
+          <div class="ans"><p>KCl. Its solubility rises from about 28 to 56 g per 100 g between 0 and 100 °C. NaCl only rises from about 35.7 to 39.0 g per 100 g.</p><p>Dissolving KCl is more endothermic (+17.22 kJ mol⁻¹) than dissolving NaCl (+3.88 kJ mol⁻¹). Raising the temperature favours the endothermic direction, so the equilibrium for KCl shifts further towards the dissolved ions. K⁺ is larger than Na⁺, with lower charge density, so its hydration enthalpy is less exothermic. This makes the overall enthalpy of solution more endothermic.</p></div></details>
+        <details class="q"><summary><span class="qn">Q7</span><span>Why is it hard to get a good NaCl curve with this method? How could you improve it?</span><span class="rev">Show answer</span></summary>
+          <div class="ans"><p>NaCl's solubility changes by only about 0.03 g per 100 g for each °C. A tiny change in the volume of water changes the crystallisation temperature a lot. With 9 g of NaCl in about 24 cm³ of water, a 0.05 cm³ burette error shifts the temperature by about 2 °C. Random errors in volume and temperature can be as large as the trend.</p><p>Improvements: use a larger mass of salt and water, add water in small portions (0.20 to 0.30 cm³), heat and cool each run twice and take a mean temperature, and use a digital thermometer or data logger.</p></div></details>
+        <details class="q"><summary><span class="qn">Q8</span><span>Supercooling and evaporation are two sources of error. Explain how each one affects your calculated solubility values or your curve.</span><span class="rev">Show answer</span></summary>
+          <div class="ans"><p><b>Supercooling:</b> crystals may not form until the solution is a little below its true saturation temperature. The recorded temperature is too low, so each point is plotted too far left. The curve then sits above the true curve (solubility looks too high at a given temperature). Stirring and cooling slowly reduce this.</p><p><b>Evaporation:</b> water lost while heating means the real mass of water is less than the burette volume. The true concentration is higher than calculated, so the calculated solubility is too low. Keep heating times short and use a loosely stoppered tube.</p></div></details>
+      </div>
+
+      <div class="card">
+        <details class="teacher" id="teacher">
+          <summary>Teacher notes</summary>
+          <div class="teacher-grid">
+            <p class="tip" style="font-size:15px">This simulation follows the practical described for learning aim B2 in Pearson's Unit 16 delivery guide. Students add known volumes of water from a burette to a known mass of salt, heat and stir to dissolve, cool, and record the temperature at which precipitation first appears. They calculate solubility in g per 100 g water and plot it against temperature. Use it before or after the wet practical. The assessment evidence for B2 must still come from students' own practical work.</p>
+            <div class="tablebox">
+              <table class="dh" style="min-width:520px">
+                <thead><tr><th>Salt</th><th>Mass</th><th>First volume</th><th>Then add</th><th>Range covered</th></tr></thead>
+                <tbody>
+                  <tr><td>KCl</td><td class="n">4.00 g</td><td class="n">7.50 cm³</td><td class="n">1.00 cm³</td><td>about 88 °C down to 13 °C in 6 runs</td></tr>
+                  <tr><td>NaCl</td><td class="n">9.00 g</td><td class="n">23.20 cm³</td><td class="n">0.30 cm³</td><td>about 97 °C down to 26 °C in 7 runs</td></tr>
+                  <tr><td>KNO<sub>3</sub></td><td class="n">4.00 g</td><td class="n">2.00 cm³</td><td class="n">1.00 cm³</td><td>about 90 °C down to 25 °C</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="plain">
+              <li>Turn off <i>Realistic errors</i> to show the ideal method. Turn it on for evaluation work on supercooling, evaporation and weighing.</li>
+              <li>Keep <i>Calculate solubility for me</i> off so students practise the calculation. Each row has a Reveal button if they get stuck.</li>
+              <li>Show data-book values after students have drawn their own curve, then compare at a chosen temperature with the read-off tool.</li>
+              <li>For higher grades, students link the steepness of each curve to Δ<sub>sol</sub>H, ionic radius and charge density, as in Q6.</li>
+            </ul>
+            <p class="src">Data sources: NaCl solubility from <a href="https://www.ausetute.com.au/solcurve.html" target="_blank" rel="noopener">AUS-e-TUTE solubility curves</a>. KCl and KNO<sub>3</sub> solubility from the <a href="https://en.wikipedia.org/wiki/Solubility_table" target="_blank" rel="noopener">Wikipedia solubility table</a> (KCl at 70 °C is interpolated). Enthalpies of solution at 25 °C from V. B. Parker, <i>Thermal Properties of Uni-Univalent Electrolytes</i>, NBS 1965, via <a href="https://www.purdue.edu/science/archive/docs/science-express/labs/Enthalpy%20of%20Solution_Reference.pdf" target="_blank" rel="noopener">Purdue</a>. Method from <a href="https://qualifications.pearson.com/content/dam/pdf/btec-international-level-3/applied-science/specification-and-sample-assessments/BTEC%202020%20L3%20INT%20App%20Sci%20DG%20U16%20V1.pdf" target="_blank" rel="noopener">Pearson Unit 16 delivery guide</a>.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- data ---------- */
+  const SALTS = {
+    NaCl: { name: 'Sodium chloride', html: 'NaCl', color: '--s-nacl', marker: 'circle',
+      T: [0,10,20,30,40,50,60,70,80,90,100], S: [35.65,35.72,35.89,36.09,36.37,36.69,37.04,37.46,37.93,38.47,38.99],
+      plan: { mass: 9.00, start: 23.20, step: 0.30 } },
+    KCl: { name: 'Potassium chloride', html: 'KCl', color: '--s-kcl', marker: 'square',
+      T: [0,10,20,30,40,50,60,80,90,100], S: [28.0,31.2,34.2,37.2,40.1,42.6,45.8,51.3,53.9,56.3],
+      plan: { mass: 4.00, start: 7.50, step: 1.00 } },
+    KNO3: { name: 'Potassium nitrate', html: 'KNO<sub>3</sub>', color: '--s-kno3', marker: 'triangle',
+      T: [0,10,20,30,40,50,60,70,80,90,100], S: [13.3,20.9,31.6,45.8,63.9,85.5,110,138,169,202,246],
+      plan: { mass: 4.00, start: 2.00, step: 1.00 } }
+  };
+  const ORDER = ['NaCl', 'KCl', 'KNO3'];
+
+  function monotone(xs, ys) {
+    const n = xs.length, d = [], m = new Array(n);
+    for (let i = 0; i < n - 1; i++) d.push((ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]));
+    m[0] = d[0]; m[n - 1] = d[n - 2];
+    for (let i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2;
+    for (let i = 0; i < n - 1; i++) {
+      if (d[i] === 0) { m[i] = m[i + 1] = 0; continue; }
+      const a = m[i] / d[i], b = m[i + 1] / d[i], s = a * a + b * b;
+      if (s > 9) { const t = 3 / Math.sqrt(s); m[i] = t * a * d[i]; m[i + 1] = t * b * d[i]; }
+    }
+    return x => {
+      x = Math.max(xs[0], Math.min(xs[n - 1], x));
+      let i = 0; while (i < n - 2 && x > xs[i + 1]) i++;
+      const h = xs[i + 1] - xs[i], t = (x - xs[i]) / h, t2 = t * t, t3 = t2 * t;
+      return (2*t3 - 3*t2 + 1) * ys[i] + (t3 - 2*t2 + t) * h * m[i] + (-2*t3 + 3*t2) * ys[i + 1] + (t3 - t2) * h * m[i + 1];
+    };
+  }
+  for (const k of ORDER) SALTS[k].sol = monotone(SALTS[k].T, SALTS[k].S);
+  const S = (salt, T) => SALTS[salt].sol(T);
+  function Tsat(salt, s) {
+    if (s <= S(salt, 0)) return -Infinity;
+    if (s >= S(salt, 100)) return Infinity;
+    let lo = 0, hi = 100;
+    for (let i = 0; i < 50; i++) { const mid = (lo + hi) / 2; if (S(salt, mid) < s) lo = mid; else hi = mid; }
+    return (lo + hi) / 2;
+  }
+  window.__solModel = { S, Tsat, SALTS };
+
+  /* ---------- state ---------- */
+  const R = n => Math.round(n * 100) / 100;
+  const st = {
+    selSalt: 'KCl', realistic: true, speed: 1, autoCalc: false, fit: 'curve', yMode: 'zero', book: false,
+    tube: null, rows: [], nextId: 1, msg: '', warn: false
+  };
+  const newSuper = () => st.realistic ? Math.random() * 1.5 : 0;
+  function newTube(salt, target) {
+    const mass = st.realistic ? R(target + (Math.random() * 0.08 - 0.04)) : R(target);
+    return { salt, mass: Math.max(0.01, mass), vol: 0, water: 0, T: 22, solid: Math.max(0.01, mass), mode: 'room',
+      dissolved: false, recorded: false, superc: newSuper(), coldWarned: false, hotWarned: false };
+  }
+  function openingTube() {
+    const t = newTube('KCl', 4.00); t.vol = 7.50; t.water = 7.50;
+    t.solid = Math.max(0, t.mass - S('KCl', 22) * t.water / 100); return t;
+  }
+  st.tube = openingTube();
+
+  function say(m, warn) { st.msg = m; st.warn = !!warn; const el = $('#msg'); el.textContent = m; el.classList.toggle('warn', !!warn); }
+
+  /* ---------- static svg bits ---------- */
+  (function ticks() {
+    let o = '';
+    for (let t = 0; t <= 100; t += 10) { const y = yT(t); o += `<line x1="184" x2="${t % 50 === 0 ? 190 : 187}" y1="${y}" y2="${y}" style="stroke:var(--muted);stroke-width:.8"/>`; }
+    $('#ticks').innerHTML = o;
+    let b = '';
+    for (let v = 0; v <= 50; v += 5) { const y = 6 + v / 50 * 71; b += `<line x1="${v % 10 === 0 ? 168 : 172}" x2="177" y1="${y}" y2="${y}" style="stroke:var(--muted);stroke-width:.7"/>`; }
+    $('#bticks').innerHTML = b;
+  })();
+  function yT(T) { return 372 - Math.max(-5, Math.min(110, T)) / 110 * 320; }
+
+  // crystal speck positions
+  const specks = [];
+  (function () {
+    let seed = 12345; const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 90; i++) {
+      if (i < 12) specks.push({ susp: true, fx: 164 + r() * 32, fy: 0.15 + r() * 0.8, s: 2 + r() * 1.6 });
+      else {
+        const j = i - 12, layer = Math.floor(j / 7), b = 3 + layer * 3.1, half = b < 19 ? Math.sqrt(Math.max(0, 361 - (19 - b) * (19 - b))) - 2.5 : 16;
+        specks.push({ susp: false, x: 180 + (r() * 2 - 1) * half, y: 395 - b, s: 2.2 + r() * 1.8 });
+      }
+    }
+  })();
+  const diamond = (x, y, s) => `<polygon points="${x},${y - s} ${x + s * .8},${y} ${x},${y + s} ${x - s * .8},${y}" style="fill:var(--crystal);stroke:var(--crystal-edge);stroke-width:.6"/>`;
+
+  /* ---------- simulation ---------- */
+  const ENV = { heat: 98, air: 22, ice: 1, room: 22 }, K = { heat: 0.14, air: 0.035, ice: 0.07, room: 0.02 };
+  function step(dt) {
+    const t = st.tube; if (!t) return;
+    t.T += (ENV[t.mode] - t.T) * (1 - Math.exp(-K[t.mode] * dt));
+    if (st.realistic && t.T > 85 && t.water > 0.5) t.water = Math.max(0.5, t.water - 0.003 * (t.T - 85) / 13 * dt);
+    if (t.water <= 0) { t.solid = t.mass; return; }
+    const eq = Math.max(0, t.mass - S(t.salt, t.T) * t.water / 100);
+    if (t.solid > 0) {
+      t.solid += (eq - t.solid) * (1 - Math.exp(-1.6 * dt));
+      if (eq === 0 && t.solid < 0.002) { t.solid = 0; t.dissolved = true; t.superc = newSuper(); }
+    } else if (eq > 0) {
+      const ts = Tsat(t.salt, t.mass / t.water * 100);
+      if (t.T <= ts - t.superc) t.solid = Math.max(0.004, eq * 0.4);
+    }
+    if (t.mode === 'heat' && t.T > 96.5 && t.solid > 0 && !t.hotWarned) { t.hotWarned = true; say('The solid is still not dissolving near 98 °C. Add more water from the burette.', true); }
+    if ((t.mode === 'air' || t.mode === 'ice') && t.dissolved && !t.recorded && t.solid === 0 && Math.abs(t.T - ENV[t.mode]) < 0.6 && !t.coldWarned) {
+      t.coldWarned = true;
+      say(t.mode === 'air' ? 'No crystals at room temperature. Try the ice bath.' : 'No crystals even in the ice bath. The solution is too dilute: start a new tube with less water.', true);
+    }
+  }
+
+  function reading(T) { return st.realistic ? (Math.round(T * 2) / 2).toFixed(1) : T.toFixed(1); }
+
+  let lastObs = '', dropT = -1;
+  function drawApparatus() {
+    const t = st.tube;
+    const vol = t ? t.vol : 0;
+    const h = Math.min(220, vol * 6) + (t && t.solid > 0 ? 0 : 0);
+    const ytop = 396 - h;
+    $('#liq').setAttribute('y', ytop); $('#liq').setAttribute('height', Math.max(0, h + 4));
+    $('#meniscus').setAttribute('y1', ytop); $('#meniscus').setAttribute('y2', ytop);
+    $('#meniscus').setAttribute('opacity', h > 1 ? .6 : 0);
+    const T = t ? t.T : 22, yt = yT(T);
+    $('#tcol').setAttribute('y', yt); $('#tcol').setAttribute('height', 386 - yt);
+    const bv = Math.min(50, vol);
+    $('#bliq').setAttribute('y', 6 + bv / 50 * 71); $('#bliq').setAttribute('height', Math.max(0, 71 - bv / 50 * 71));
+    $('#glow').setAttribute('opacity', t && t.mode === 'heat' ? .9 : 0);
+    $('#ice').innerHTML = t && t.mode === 'ice' ? [96, 120, 222, 246, 108, 236].map((x, i) => `<rect x="${x}" y="${i > 3 ? 300 : 272}" width="18" height="16" rx="3" style="fill:var(--crystal);stroke:var(--cool);stroke-width:1" opacity=".85"/>`).join('') : '';
+    $('#bathLbl').textContent = t && t.mode === 'ice' ? 'ice bath' : t && t.mode === 'heat' ? 'water bath (98 °C)' : 'water bath';
+    $('#bath').style.display = t && (t.mode === 'heat' || t.mode === 'ice' || t.mode === 'room') ? '' : 'none';
+    // crystals
+    let n = 0;
+    if (t && t.solid > 0) n = Math.min(90, 3 + Math.round(87 * Math.sqrt(Math.min(1, t.solid / t.mass))));
+    let o = '';
+    for (let i = 0; i < n; i++) {
+      const p = specks[i];
+      if (p.susp) { const y = ytop + 4 + p.fy * Math.max(4, (396 - ytop - 8)); o += diamond(p.fx, y, p.s); }
+      else if (p.y > ytop + 2) o += diamond(p.x, p.y, p.s);
+    }
+    $('#crystals').innerHTML = o;
+    // drop
+    const now = performance.now();
+    if (dropT > 0) {
+      const f = (now - dropT) / 450;
+      if (f >= 1) { dropT = -1; $('#drop').setAttribute('opacity', 0); }
+      else { $('#drop').setAttribute('cy', 96 + f * (ytop - 96)); $('#drop').setAttribute('opacity', 1); }
+    }
+    // meters
+    $('#mMass').textContent = t ? t.mass.toFixed(2) : '0.00';
+    $('#mVol').textContent = vol.toFixed(2);
+    $('#mTemp').textContent = reading(T);
+    // observation
+    let obs;
+    if (!t) obs = 'No tube set up.';
+    else if (t.vol === 0) obs = 'Dry white solid in the boiling tube.';
+    else if (t.solid > 0 && !t.dissolved) obs = t.solid > t.mass * 0.15 ? 'Undissolved white solid at the bottom of the tube.' : 'A little undissolved solid is left.';
+    else if (t.solid > 0) obs = t.solid < t.mass * 0.03 ? 'Tiny crystals are appearing in the solution.' : 'White crystals are forming in the tube.';
+    else obs = 'Clear, colourless solution. No solid visible.';
+    if (obs !== lastObs) { lastObs = obs; $('#obs').innerHTML = '<b>Observation:</b> ' + obs; }
+  }
+
+  function nextStep() {
+    const t = st.tube;
+    if (!t) return ['weigh', 'Choose a salt and weigh it into a new tube.'];
+    if (t.vol === 0) return ['water', `Add about ${SALTS[t.salt].plan.start.toFixed(2)} cm³ of water from the burette.`];
+    if (!t.dissolved) {
+      if (t.mode !== 'heat') return ['heat', 'Heat the tube in the water bath until all the solid dissolves.'];
+      if (t.T > 96.5 && t.solid > 0) return ['water', 'Not all the solid will dissolve. Add more water.'];
+      return ['heat', 'Keep heating and watch the solid dissolve.'];
+    }
+    if (t.recorded) return ['water', `Add more water (about ${SALTS[t.salt].plan.step.toFixed(2)} cm³), then heat again for the next run.`];
+    if (t.mode === 'heat') return ['cool', 'All the solid has dissolved. Take the tube out and let it cool.'];
+    if (t.solid > 0) return ['record', 'Crystals are forming. Record the temperature now.'];
+    return ['cool', 'Watch the solution closely as it cools.'];
+  }
+
+  let lastNext = '';
+  function drawUI() {
+    const [stp, txt] = nextStep();
+    if (txt !== lastNext) {
+      lastNext = txt; $('#nextTxt').textContent = txt;
+      for (const id of ['weigh', 'water', 'heat', 'cool', 'record']) $('#st-' + id).classList.toggle('now', id === stp);
+    }
+    const t = st.tube;
+    $('#heatBtn').setAttribute('aria-pressed', !!(t && t.mode === 'heat'));
+    $('#airBtn').setAttribute('aria-pressed', !!(t && t.mode === 'air'));
+    $('#iceBtn').setAttribute('aria-pressed', !!(t && t.mode === 'ice'));
+    for (const k of ORDER) $('#s-' + k).setAttribute('aria-pressed', k === st.selSalt);
+    for (const v of [1, 2, 4]) $('#sp' + v).setAttribute('aria-pressed', v === st.speed);
+    const p = SALTS[st.selSalt].plan;
+    $('#planTip').innerHTML = `Suggested for ${SALTS[st.selSalt].html}: ${p.mass.toFixed(2)} g, start with ${p.start.toFixed(2)} cm³ of water, then add ${p.step.toFixed(2)} cm³ each run.`;
+  }
+
+  /* ---------- actions ---------- */
+  function setMode(m) {
+    const t = st.tube; if (!t) return;
+    if (t.vol === 0 && m !== 'room') { say('Add some water before heating or cooling.', true); return; }
+    t.mode = t.mode === m ? 'room' : m;
+    if (m === 'heat') t.hotWarned = false;
+    t.coldWarned = false;
+    say(t.mode === 'heat' ? 'Heating in the water bath and stirring.' : t.mode === 'air' ? 'Cooling in air and stirring. Watch for the first crystals.' : t.mode === 'ice' ? 'Cooling in the ice bath and stirring. Watch for the first crystals.' : 'Tube in the rack.');
+    drawUI();
+  }
+  function addWater(v) {
+    const t = st.tube;
+    if (!t) { say('Weigh some salt into a tube first.', true); return; }
+    v = Math.round(v * 20) / 20;
+    if (!(v > 0)) { say('Enter a volume of at least 0.05 cm³.', true); return; }
+    if (t.vol + v > 35.001) { say('The boiling tube cannot hold more than 35 cm³. Start a new tube with less water.', true); return; }
+    t.vol = R(t.vol + v); t.water += v;
+    if (t.solid > 0) t.dissolved = false;
+    t.recorded = false; t.hotWarned = false; t.coldWarned = false;
+    if (!reduce) dropT = performance.now();
+    say(`Added ${v.toFixed(2)} cm³. Burette now reads ${t.vol.toFixed(2)} cm³.`);
+    drawUI();
+  }
+  function weigh() {
+    const v = parseFloat($('#massIn').value);
+    if (!(v >= 0.5 && v <= 12)) { say('Enter a mass between 0.50 g and 12.00 g.', true); return; }
+    st.tube = newTube(st.selSalt, v);
+    say(`New tube: weighed ${st.tube.mass.toFixed(2)} g of ${SALTS[st.selSalt].name.toLowerCase()}. Record the balance reading, not the target mass. Burette refilled to 0.00 cm³.`);
+    drawUI();
+  }
+  function record() {
+    const t = st.tube;
+    if (!t || t.vol === 0) { say('Set up a tube with salt and water first.', true); return; }
+    if (!t.dissolved) { say('Not all of the solid has dissolved yet. Heat until the solution is clear, then let it cool.', true); return; }
+    if (t.recorded) { say('You have already recorded this run. Add more water, then heat again.', true); return; }
+    if (t.solid <= 0) { say('No crystals yet. Look closely at the tube and keep watching as it cools.', true); return; }
+    const T = parseFloat(reading(t.T));
+    t.recorded = true;
+    st.rows.push({ id: st.nextId++, salt: t.salt, mass: t.mass, vol: t.vol, T, entered: null, status: 'new', example: false });
+    say(`Recorded: crystals appeared at ${T.toFixed(1)} °C. Now calculate the solubility in the results table.`);
+    renderTable(); drawGraph(); drawUI();
+  }
+
+  /* ---------- results ---------- */
+  const solOf = r => r.mass / r.vol * 100;
+  const plotted = r => st.autoCalc || r.status === 'ok' || r.status === 'revealed';
+  function markerSVG(salt, x, y, size, extra) {
+    const c = `var(${SALTS[salt].color})`, m = SALTS[salt].marker, s = size;
+    const st = `style="fill:${c};stroke:var(--panel);stroke-width:1.2" ${extra || ''}`;
+    if (m === 'circle') return `<circle cx="${x}" cy="${y}" r="${s}" ${st}/>`;
+    if (m === 'square') return `<rect x="${x - s * .9}" y="${y - s * .9}" width="${s * 1.8}" height="${s * 1.8}" ${st}/>`;
+    return `<polygon points="${x},${y - s * 1.15} ${x + s * 1.05},${y + s * .75} ${x - s * 1.05},${y + s * .75}" ${st}/>`;
+  }
+  const chip = salt => `<span class="saltchip"><svg class="mk" viewBox="0 0 12 12" aria-hidden="true">${markerSVG(salt, 6, 6, 4.4)}</svg>${SALTS[salt].html}</span>`;
+
+  function solCell(r) {
+    if (st.autoCalc || r.status === 'revealed') return `<span class="n" style="font-family:var(--mono)">${solOf(r).toFixed(1)}</span>${r.status === 'revealed' && !r.example ? ' <span class="verdict">(revealed)</span>' : ''}`;
+    const val = r.entered == null ? '' : r.entered;
+    let v = '';
+    if (r.status === 'ok') v = `<span class="verdict ok">✓ Correct</span>`;
+    else if (r.status === 'bad') v = `<span class="verdict bad">Not quite. Mass of salt ÷ mass of water × 100.</span> <button class="linkbtn" type="button" data-reveal="${r.id}">Reveal</button>`;
+    return `<input type="number" step="0.1" id="sol-${r.id}" value="${val}" placeholder="?" aria-label="Solubility for run ${r.id}"> <button class="btn small" type="button" data-check="${r.id}">Check</button> ${v}`;
+  }
+  function renderTable() {
+    const tb = $('#tbody');
+    if (!st.rows.length) {
+      tb.innerHTML = `<tr><td colspan="8" class="empty">No results yet. Record a crystallisation temperature and it will appear here. You can also load example results to explore the graph.</td></tr>`;
+      return;
+    }
+    tb.innerHTML = st.rows.map((r, i) => `<tr data-row="${r.id}">
+      <td class="n">${i + 1}</td>
+      <td>${chip(r.salt)}${r.example ? '<span class="ex">Example</span>' : ''}</td>
+      <td class="n">${r.mass.toFixed(2)}</td>
+      <td class="n">${r.vol.toFixed(2)}</td>
+      <td class="n">${r.vol.toFixed(2)}</td>
+      <td class="n">${r.T.toFixed(1)}</td>
+      <td><div class="solcell" id="cell-${r.id}">${solCell(r)}</div></td>
+      <td><button class="del" type="button" data-del="${r.id}" aria-label="Delete run ${i + 1}">×</button></td></tr>`).join('');
+  }
+  function check(id) {
+    const r = st.rows.find(x => x.id === id); if (!r) return;
+    const inp = $('#sol-' + id); const v = parseFloat(inp && inp.value);
+    if (!isFinite(v)) { say('Type a solubility value first.', true); return; }
+    r.entered = v;
+    const c = solOf(r), ok = Math.abs(v - c) <= Math.max(0.1, c * 0.004);
+    r.status = ok ? 'ok' : 'bad';
+    $('#cell-' + id).innerHTML = solCell(r);
+    if (!ok) { const el = $('#sol-' + id); if (el) el.focus(); }
+    say(ok ? `Correct: ${c.toFixed(1)} g per 100 g water. The point is now on your graph.` : 'That value does not match. Check you divided the mass of salt by the mass of water, then multiplied by 100.', !ok);
+    drawGraph();
+  }
+  $('#tbody').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.check) check(+b.dataset.check);
+    else if (b.dataset.reveal) { const r = st.rows.find(x => x.id === +b.dataset.reveal); r.status = 'revealed'; $('#cell-' + r.id).innerHTML = solCell(r); drawGraph(); }
+    else if (b.dataset.del) { st.rows = st.rows.filter(x => x.id !== +b.dataset.del); renderTable(); drawGraph(); }
+  });
+  $('#tbody').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.id && e.target.id.startsWith('sol-')) { e.preventDefault(); check(+e.target.id.slice(4)); }
+  });
+
+  function exampleRows() {
+    const out = [];
+    for (const salt of ['KCl', 'NaCl']) {
+      const p = SALTS[salt].plan, mass = R(p.mass + (salt === 'KCl' ? 0.02 : 0.03));
+      for (let i = 0; i < 7; i++) {
+        const vol = R(p.start + i * p.step), ts = Tsat(salt, mass / vol * 100);
+        if (!isFinite(ts) || ts < 3) continue;
+        const T = Math.round((ts - Math.random() * 1.2 + (Math.random() - 0.5) * 0.6) * 2) / 2;
+        out.push({ id: st.nextId++, salt, mass, vol, T, entered: null, status: 'revealed', example: true });
+      }
+    }
+    return out;
+  }
+
+  /* ---------- graph ---------- */
+  function fitFor(salt) {
+    const pts = st.rows.filter(r => r.salt === salt && plotted(r)).map(r => [r.T, solOf(r)]);
+    if (pts.length < 2 || st.fit === 'none') return null;
+    const xs = pts.map(p => p[0]); const lo = Math.min(...xs), hi = Math.max(...xs);
+    if (hi - lo < 1) return null;
+    const deg = st.fit === 'line' || pts.length < 3 ? 1 : 2;
+    const xm = (lo + hi) / 2;
+    const n = deg + 1, A = Array.from({ length: n }, () => new Array(n + 1).fill(0));
+    for (const [x0, y] of pts) {
+      const x = x0 - xm, pw = [1, x, x * x];
+      for (let i = 0; i < n; i++) { for (let j = 0; j < n; j++) A[i][j] += pw[i] * pw[j]; A[i][n] += pw[i] * y; }
+    }
+    for (let c = 0; c < n; c++) {
+      let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+      [A[c], A[p]] = [A[p], A[c]];
+      if (Math.abs(A[c][c]) < 1e-12) return null;
+      for (let r = 0; r < n; r++) if (r !== c) { const f = A[r][c] / A[c][c]; for (let k = c; k <= n; k++) A[r][k] -= f * A[c][k]; }
+    }
+    const co = A.map((row, i) => row[n] / row[i]);
+    return { f: x => { const u = x - xm; return co[0] + co[1] * u + (deg === 2 ? co[2] * u * u : 0); }, lo, hi };
+  }
+  function niceStep(range) {
+    const raw = range / 6, p = Math.pow(10, Math.floor(Math.log10(raw)));
+    for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= raw) return m * p;
+    return 10 * p;
+  }
+  function visibleSalts() {
+    const set = new Set(st.rows.filter(plotted).map(r => r.salt));
+    if (st.book || set.size === 0) set.add(st.tube ? st.tube.salt : st.selSalt);
+    return ORDER.filter(k => set.has(k));
+  }
+  function drawGraph() {
+    const W = 640, H = 420, L = 62, Rm = 18, T = 16, B = 54, pw = W - L - Rm, ph = H - T - B;
+    const salts = visibleSalts(), fits = {};
+    let vals = [];
+    for (const s of salts) {
+      st.rows.filter(r => r.salt === s && plotted(r)).forEach(r => vals.push(solOf(r)));
+      fits[s] = fitFor(s);
+      if (fits[s]) for (let x = fits[s].lo; x <= fits[s].hi; x += 2) vals.push(fits[s].f(x));
+      if (st.book) for (let x = 0; x <= 100; x += 5) vals.push(S(s, x));
+    }
+    const hasData = st.rows.some(plotted);
+    if (!vals.length) vals = [0, 60];
+    let ymin, ymax, step;
+    if (st.yMode === 'zero') { ymin = 0; step = niceStep(Math.max(...vals) * 1.05); ymax = Math.ceil(Math.max(...vals) * 1.05 / step) * step; }
+    else {
+      let lo = Math.min(...vals), hi = Math.max(...vals); const pad = Math.max(0.5, (hi - lo) * 0.12);
+      lo -= pad; hi += pad; step = niceStep(hi - lo); ymin = Math.floor(lo / step) * step; ymax = Math.ceil(hi / step) * step;
+      if (ymin < 0) ymin = 0;
+    }
+    const X = t => L + t / 100 * pw, Y = v => T + (1 - (v - ymin) / (ymax - ymin)) * ph;
+    let o = '';
+    for (let t = 0; t <= 100; t += 2) o += `<line class="${t % 10 ? 'gmin' : 'gmaj'}" x1="${X(t)}" x2="${X(t)}" y1="${T}" y2="${T + ph}"/>`;
+    const minor = step / 5;
+    for (let v = ymin, i = 0; v <= ymax + 1e-9; v += minor, i++) o += `<line class="${i % 5 ? 'gmin' : 'gmaj'}" x1="${L}" x2="${L + pw}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/>`;
+    o += `<line class="axis" x1="${L}" x2="${L}" y1="${T}" y2="${T + ph}"/><line class="axis" x1="${L}" x2="${L + pw}" y1="${T + ph}" y2="${T + ph}"/>`;
+    for (let t = 0; t <= 100; t += 10) o += `<text class="ax" x="${X(t)}" y="${T + ph + 17}" text-anchor="middle">${t}</text>`;
+    const dec = step < 1 ? 1 : 0;
+    for (let v = ymin; v <= ymax + 1e-9; v += step) o += `<text class="ax" x="${L - 7}" y="${Y(v) + 4}" text-anchor="end">${v.toFixed(dec)}</text>`;
+    o += `<text class="axt" x="${L + pw / 2}" y="${H - 10}" text-anchor="middle">Temperature / °C</text>`;
+    o += `<text class="axt" transform="translate(16 ${T + ph / 2}) rotate(-90)" text-anchor="middle">Solubility / g per 100 g water</text>`;
+    if (st.yMode === 'zoom' && ymin > 0) o += `<text class="ax" x="${L + 6}" y="${T + ph - 6}">y-axis does not start at 0</text>`;
+    // read-off line
+    const rt = +$('#readT').value;
+    o += `<line x1="${X(rt)}" x2="${X(rt)}" y1="${T}" y2="${T + ph}" style="stroke:var(--accent);stroke-width:1.4;stroke-dasharray:4 4"/>`;
+    o += `<g clip-path="url(#plotClip)">`;
+    for (const s of salts) {
+      const c = `var(${SALTS[s].color})`;
+      if (st.book) {
+        let d = ''; for (let x = 0; x <= 100; x += 1) d += (x ? 'L' : 'M') + X(x).toFixed(1) + ',' + Y(S(s, x)).toFixed(1);
+        o += `<path d="${d}" style="fill:none;stroke:${c};stroke-width:1.6;stroke-dasharray:6 5;opacity:.75"/>`;
+      }
+      const f = fits[s];
+      if (f) {
+        let d = ''; const n = 60;
+        for (let i = 0; i <= n; i++) { const x = f.lo + (f.hi - f.lo) * i / n; d += (i ? 'L' : 'M') + X(x).toFixed(1) + ',' + Y(f.f(x)).toFixed(1); }
+        o += `<path d="${d}" style="fill:none;stroke:${c};stroke-width:2.4;stroke-linejoin:round"/>`;
+      }
+    }
+    o += `</g>`;
+    for (const s of salts) for (const r of st.rows.filter(r => r.salt === s && plotted(r))) o += markerSVG(s, X(r.T).toFixed(1), Y(solOf(r)).toFixed(1), 4.8);
+    o = `<defs><clipPath id="plotClip"><rect x="${L}" y="${T}" width="${pw}" height="${ph}"/></clipPath></defs>` + o;
+    $('#graph').innerHTML = o;
+    $('#chartEmpty').hidden = hasData || st.book;
+    $('#legend').innerHTML = salts.map(s => `<span>${chip(s)}</span>`).join('') +
+      `<span><span class="solid"></span>your line of best fit</span>` + (st.book ? `<span><span class="dash"></span>data-book values</span>` : '');
+    readout(fits, salts);
+  }
+  function readout(fits, salts) {
+    const t = +$('#readT').value, w = parseFloat($('#readW').value) || 0;
+    $('#readTv').textContent = t;
+    let rows = '', mass = [];
+    for (const s of salts) {
+      const f = fits[s], book = S(s, t);
+      let yours = '—', diff = '—';
+      if (f) {
+        const y = f.f(t), out = t < f.lo - 0.01 || t > f.hi + 0.01;
+        yours = `<span class="n" style="font-family:var(--mono)">${y.toFixed(1)}</span>${out ? '<br><span class="flag">outside your data</span>' : ''}`;
+        diff = `<span style="font-family:var(--mono)">${((y - book) / book * 100 >= 0 ? '+' : '') + ((y - book) / book * 100).toFixed(1)}%</span>`;
+        mass.push(`${SALTS[s].html}: ${(y * w / 100).toFixed(2)} g (your curve)`);
+      }
+      rows += `<tr><td>${chip(s)}</td><td>${yours}</td><td style="font-family:var(--mono)">${st.book ? book.toFixed(1) : '<button class="linkbtn" type="button" data-showbook>show</button>'}</td><td>${st.book ? diff : '—'}</td></tr>`;
+      if (st.book) mass.push(`${SALTS[s].html}: ${(book * w / 100).toFixed(2)} g (data book)`);
+    }
+    $('#rbody').innerHTML = rows;
+    $('#massTip').innerHTML = mass.length ? `Mass that dissolves in ${w} g of water at ${t} °C: ` + mass.join(' · ') : 'Plot at least two points for a salt to read values from your curve.';
+  }
+  $('#rbody').addEventListener('click', e => { if (e.target.closest('[data-showbook]')) { st.book = true; $('#bookOn').checked = true; drawGraph(); } });
+
+  /* ---------- wiring ---------- */
+  for (const k of ORDER) $('#s-' + k).addEventListener('click', () => {
+    st.selSalt = k; $('#massIn').value = SALTS[k].plan.mass.toFixed(2);
+    say(`${SALTS[k].name} selected. Press "Weigh into new tube" to start.`); drawUI();
+  });
+  $('#weighBtn').addEventListener('click', weigh);
+  document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => addWater(parseFloat(b.dataset.add))));
+  $('#addBtn').addEventListener('click', () => addWater(parseFloat($('#addIn').value)));
+  $('#addIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addWater(parseFloat($('#addIn').value)); } });
+  $('#heatBtn').addEventListener('click', () => setMode('heat'));
+  $('#airBtn').addEventListener('click', () => setMode('air'));
+  $('#iceBtn').addEventListener('click', () => setMode('ice'));
+  for (const v of [1, 2, 4]) $('#sp' + v).addEventListener('click', () => { st.speed = v; drawUI(); });
+  $('#recordBtn').addEventListener('click', record);
+  $('#realistic').addEventListener('change', e => { st.realistic = e.target.checked; if (st.tube) st.tube.superc = newSuper(); say(st.realistic ? 'Realistic errors on.' : 'Realistic errors off: ideal readings, no supercooling or evaporation.'); });
+  $('#autoCalc').addEventListener('change', e => { st.autoCalc = e.target.checked; renderTable(); drawGraph(); });
+  $('#exampleBtn').addEventListener('click', () => { st.rows = st.rows.filter(r => !r.example).concat(exampleRows()); renderTable(); drawGraph(); say('Example results loaded for KCl and NaCl. They are marked "Example".'); });
+  $('#clearBtn').addEventListener('click', () => {
+    if (!st.rows.length) return;
+    const b = $('#clearBtn');
+    if (b.dataset.confirm) { st.rows = []; delete b.dataset.confirm; b.textContent = 'Clear all results'; renderTable(); drawGraph(); say('All results cleared.'); }
+    else { b.dataset.confirm = '1'; b.textContent = 'Click again to clear'; setTimeout(() => { delete b.dataset.confirm; b.textContent = 'Clear all results'; }, 3000); }
+  });
+  const fitBtns = { curve: '#fitCurve', line: '#fitLine', none: '#fitNone' };
+  for (const k in fitBtns) $(fitBtns[k]).addEventListener('click', () => { st.fit = k; for (const j in fitBtns) $(fitBtns[j]).setAttribute('aria-pressed', j === k); drawGraph(); });
+  $('#yZero').addEventListener('click', () => { st.yMode = 'zero'; $('#yZero').setAttribute('aria-pressed', true); $('#yZoom').setAttribute('aria-pressed', false); drawGraph(); });
+  $('#yZoom').addEventListener('click', () => { st.yMode = 'zoom'; $('#yZoom').setAttribute('aria-pressed', true); $('#yZero').setAttribute('aria-pressed', false); drawGraph(); });
+  $('#bookOn').addEventListener('change', e => { st.book = e.target.checked; drawGraph(); });
+  $('#readT').addEventListener('input', drawGraph);
+  $('#readW').addEventListener('input', drawGraph);
+
+  let last = performance.now();
+  function loop(now) {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    const sub = st.speed; for (let i = 0; i < sub; i++) step(dt);
+    drawApparatus(); drawUI();
+    requestAnimationFrame(loop);
+  }
+  function start(data) {
+    if (data && data.rows) {
+      Object.assign(st, data);
+      $('#realistic').checked = st.realistic; $('#autoCalc').checked = st.autoCalc; $('#bookOn').checked = st.book;
+      for (const j in fitBtns) $(fitBtns[j]).setAttribute('aria-pressed', j === st.fit);
+      $('#yZero').setAttribute('aria-pressed', st.yMode === 'zero'); $('#yZoom').setAttribute('aria-pressed', st.yMode === 'zoom');
+    }
+    $('#massIn').value = SALTS[st.selSalt].plan.mass.toFixed(2);
+    if (!st.msg) say(`A tube with ${st.tube.mass.toFixed(2)} g of KCl and 7.50 cm³ of water is ready. Heat it to begin, or set up your own tube.`);
+    else say(st.msg, st.warn);
+    renderTable(); drawGraph(); drawApparatus(); drawUI();
+    requestAnimationFrame(loop);
+  }
+  window.__sol = st;
+  window.claude?.hot?.snapshot?.(() => JSON.parse(JSON.stringify(st)));
+  window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
+</body>
+</html>
